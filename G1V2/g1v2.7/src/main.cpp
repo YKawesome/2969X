@@ -19,7 +19,7 @@
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 #include "vex.h"
-
+// #include "robot-config.cpp"
 using namespace vex;
 
 // A global instance of competition
@@ -47,7 +47,7 @@ button buttons[] = {
     {   30, 150, 60, 60,  false, 0x404040, 0xffff00, "Piston" },
     {  150, 150, 60, 60,  false, 0x404040, 0xffff00, "Clamp" },
     {  270, 150, 60, 60,  false, 0x404040, 0xC0C0C0, "6-" },
-    {  390, 150, 60, 60,  false, 0x404040, 0xC0C0C0, "7-" }
+    {  390, 150, 60, 60,  false, 0x404040, 0xC0C0C0, "AWP" }
 };
 
 //AUTON SELECTOR ORGANIZE
@@ -188,27 +188,16 @@ void moveBackward(float tiles,float speed) { //This is to move backward.
 }
 
 void turnRight(float dees,float speed) { //This is to turn right.
-        // Drivetrain.turnFor( (dees), degrees, speed, velocityUnits::pct);
-        // // vex::task::sleep(500);
+        // Drivetrain.setRotation(0, degrees);
+        // Drivetrain.turnToRotation(dees, degrees, speed, velocityUnits::pct);
+        // vex::task::sleep(timee);
         // Drivetrain.stop(coast);
+        Drivetrain.turnFor((dees*0.55), degrees, speed, velocityUnits::pct);
 
-        // Drivetrain.setHeading(0, degrees);
-        // Drivetrain.turnToHeading(dees,degrees, speed, velocityUnits::pct);
-        // Drivetrain.stop(coast);
-        Drivetrain.setRotation(0, degrees);
-        Drivetrain.turnToRotation(dees, degrees, speed, velocityUnits::pct);
 }
 
 void turnLeft(float dees,float speed) { //This is to turn left.
-        // Drivetrain.turnFor( -(dees), degrees, speed, velocityUnits::pct);
-        // // vex::task::sleep(500);
-        // Drivetrain.stop(coast);
-
-        // Drivetrain.setHeading(0, degrees);
-        // Drivetrain.turnToHeading(dees,degrees, speed, velocityUnits::pct);
-        // Drivetrain.stop(coast);
-
-        Drivetrain.turnToRotation(-(dees), degrees, speed, velocityUnits::pct);
+        Drivetrain.turnFor((-dees*0.55), degrees, speed, velocityUnits::pct);
 }
 
 void mogo_clamp(float dees) {
@@ -252,7 +241,13 @@ void pmachineclose() {
 //   // held = false;
 // }
 
-
+// void thend() {
+//   while(true) {
+//     if (chassis_is_held == true) {
+//       Mogo.spin(fwd, 5, velocityUnits::pct);
+//     }
+//   }
+// }
 
 
 
@@ -286,9 +281,13 @@ void autonomous(void) {
   bool Desperation = buttons[2].state;
   bool Piston = buttons[4].state;
   bool Clamp = buttons[5].state;
-  turnRight(100,45);
+  bool AWP = buttons[7].state;
+    
+    
   
 
+
+    
   
     if(Left == true){
 
@@ -304,14 +303,22 @@ void autonomous(void) {
             Drivetrain.setStopping(coast);
             FBar1.setStopping(hold);
             FBar2.setStopping(hold);
-            moveBackward(1.42,100);
-            moveBackward(0.55,80);
-            mogo_clamp(110);
+            moveBackward(1.35,100);
+            moveBackward(0.55,75);
+            mogo_clamp(120);
             vex::task::sleep(500);
-            moveForward(1.2,100);
-            mogo_unclamp();
-            moveForward(0.4,60);
+            moveForward(1.7,100);
+            // mogo_unclamp();
+            // moveForward(0.4,60);
         } 
+
+        if(AWP==true ) {
+          lift_up(90);
+          moveBackward(0.1,30);
+          MogoClamp.setRotation(110, degrees);
+          mogo_unclamp();
+          moveForward(0.3,45);
+        }
 
     }
 
@@ -358,19 +365,33 @@ void autonomous(void) {
           moveBackward(1.42,100);
           moveBackward(0.54,70);
           mogo_clamp(110);
-          vex::task::sleep(750);
-          moveForward(1.2,100);
-          mogo_unclamp();
-          moveForward(0.6,60);
+          vex::task::sleep(250);
+          moveForward(1.8,100);
+          // mogo_unclamp();
+          // moveForward(0.6,60);
         } 
+
+        if(AWP==true ) {
+          turnRight(50,45);
+          vex::task::sleep(300);
+          lift_up(90);
+          moveBackward(0.825,45);
+          MogoClamp.setRotation(110, degrees);
+          mogo_unclamp();
+          lift_down(105);
+          moveBackward(0.3,45);
+          mogo_clamp(105);
+          vex::task::sleep(200);
+          turnRight(100,45);
+          mogo_unclamp();
+          moveBackward(0.5,45);
+      
+        }
 
     }
 
     if (Desperation == true) {
-        lift_up(90);
-        MogoClamp.setRotation(110, degrees);
-        mogo_unclamp();
-        moveForward(0.3,45);
+      
     }
 
     
@@ -388,12 +409,14 @@ void autonomous(void) {
 /*---------------------------------------------------------------------------*/
 bool chassis_is_held = false;
 bool pneumatics_is_held = true;
+bool mogobool = true;
 void usercontrol(void) {
   Drivetrain.setStopping(coast);
   // FBar.setStopping(brake);
   MogoClamp.setStopping(hold);
   Mogo.setStopping(hold);
   Pmachine.open();
+  // thread end_sequence(thend);
   while (1) {
     
 
@@ -415,15 +438,34 @@ void usercontrol(void) {
  
 
     //Mogo
-    if (Controller1.ButtonX.pressing()) {
-      Mogo.spin(directionType::fwd,100,velocityUnits::pct);
-    }
-    else if (Controller1.ButtonA.pressing()) {
-      Mogo.spin(directionType::rev,100,velocityUnits::pct);
-    }
-    else {
+    // if (Controller1.ButtonX.pressing()) {
+    //   Mogo.spin(directionType::fwd,100,velocityUnits::pct);
+    // }
+    // else if (Controller1.ButtonA.pressing()) {
+    //   Mogo.spin(directionType::rev,100,velocityUnits::pct);
+    // }
+    // else {
+    //   Mogo.stop(brakeType::hold);
+    // }
+
+
+    if (Controller1.ButtonX.pressing() and mogobool==false) {
+      mogobool=true;
+      Mogo.spinFor(directionType::fwd, 370, degrees, 100, velocityUnits::pct);
       Mogo.stop(brakeType::hold);
+      vex::task::sleep(500);
     }
+    
+    if (Controller1.ButtonA.pressing() and mogobool==true) {
+      mogobool=false;
+      Pmachine.close();
+      Mogo.spinFor(directionType::rev, 370, degrees, 100, velocityUnits::pct);
+      Pmachine.open();
+      Mogo.stop(brakeType::hold);
+      vex::task::sleep(500);
+    }
+
+
 
     //MogoClamp
     if (Controller1.ButtonR2.pressing()) {
@@ -435,6 +477,10 @@ void usercontrol(void) {
     else {
       MogoClamp.stop(brakeType::hold);
     }
+
+    
+
+
 
     //Pneumatics
     if (Controller1.ButtonUp.pressing() and pneumatics_is_held==true) {
@@ -472,14 +518,17 @@ void usercontrol(void) {
 
     if (chassis_is_held == true) {
       Controller1.rumble("...");
+      Mogo.spin(fwd, 5, velocityUnits::pct);
     }
     else {
       Controller1.rumble("   ");
+      Mogo.stop(hold);
     }
 
     if (Controller1.ButtonRight.pressing() and chassis_is_held==true) {
       Drivetrain.setStopping(coast);
       chassis_is_held=false;
+      // thend();
       vex::task::sleep(500);
     }
     else if (Controller1.ButtonRight.pressing() and chassis_is_held==false) {

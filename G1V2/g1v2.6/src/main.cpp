@@ -19,7 +19,7 @@
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 #include "vex.h"
-
+// #include "robot-config.cpp"
 using namespace vex;
 
 // A global instance of competition
@@ -47,7 +47,7 @@ button buttons[] = {
     {   30, 150, 60, 60,  false, 0x404040, 0xffff00, "Piston" },
     {  150, 150, 60, 60,  false, 0x404040, 0xffff00, "Clamp" },
     {  270, 150, 60, 60,  false, 0x404040, 0xC0C0C0, "6-" },
-    {  390, 150, 60, 60,  false, 0x404040, 0xC0C0C0, "7-" }
+    {  390, 150, 60, 60,  false, 0x404040, 0xC0C0C0, "AWP" }
 };
 
 //AUTON SELECTOR ORGANIZE
@@ -187,28 +187,16 @@ void moveBackward(float tiles,float speed) { //This is to move backward.
         Drivetrain.stop(coast);
 }
 
-void turnRight(float dees,float speed) { //This is to turn right.
-        // Drivetrain.turnFor( (dees), degrees, speed, velocityUnits::pct);
-        // // vex::task::sleep(500);
-        // Drivetrain.stop(coast);
-
-        // Drivetrain.setHeading(0, degrees);
-        // Drivetrain.turnToHeading(dees,degrees, speed, velocityUnits::pct);
-        // Drivetrain.stop(coast);
+void turnRight(float dees,float speed,float timee) { //This is to turn right.
         Drivetrain.setRotation(0, degrees);
         Drivetrain.turnToRotation(dees, degrees, speed, velocityUnits::pct);
+        // vex::task::sleep(timee);
+        // Drivetrain.stop(coast);
+
 }
 
 void turnLeft(float dees,float speed) { //This is to turn left.
-        // Drivetrain.turnFor( -(dees), degrees, speed, velocityUnits::pct);
-        // // vex::task::sleep(500);
-        // Drivetrain.stop(coast);
-
-        // Drivetrain.setHeading(0, degrees);
-        // Drivetrain.turnToHeading(dees,degrees, speed, velocityUnits::pct);
-        // Drivetrain.stop(coast);
-
-        Drivetrain.turnToRotation(-(dees), degrees, speed, velocityUnits::pct);
+        Drivetrain.turnToHeading(-(dees), degrees, 20, velocityUnits::pct);
 }
 
 void mogo_clamp(float dees) {
@@ -292,9 +280,27 @@ void autonomous(void) {
   bool Desperation = buttons[2].state;
   bool Piston = buttons[4].state;
   bool Clamp = buttons[5].state;
-  
-  
+  bool AWP = buttons[7].state;
+  // Drivetrain.turnFor(10, degrees, 20, velocityUnits::pct);
 
+
+
+    if(AWP==true ) {
+      turnLeft(124,45);
+      vex::task::sleep(300);
+      lift_up(90);
+      moveBackward(0.825,45);
+      MogoClamp.setRotation(110, degrees);
+      mogo_unclamp();
+      lift_down(105);
+      moveBackward(0.3,45);
+      mogo_clamp(105);
+      vex::task::sleep(200);
+      turnRight(100,45,1000);
+      mogo_unclamp();
+      moveBackward(0.5,45);
+      
+    }
   
     if(Left == true){
 
@@ -345,7 +351,7 @@ void autonomous(void) {
           moveBackward(0.3,45);
           mogo_clamp(105);
           vex::task::sleep(200);
-          turnRight(100,45);
+          turnRight(100,45,1000);
           mogo_unclamp();
           moveBackward(0.5,45);
 
